@@ -1,10 +1,17 @@
 #include "../drivers/screen.h"
 #include "./idt/idt.h"
+#include "./pic/pic.h"
 
-void wrong_func() {
-	char* video_memory = (char*) 0xb8000;
-	*video_memory = 'Y';
-	*(video_memory + 1) = 0x0f;
+/*
+	void init_interrupts()
+	A function that remaps the PIC vector offsets for hardware IRQs, loads
+	the Interrupt Descriptor Table IDT into memory and re-enables interrupts.
+	Required for essential functions like timers, keyboard input, etc.
+*/
+void init_interrupts() {
+	pic_remap(); // Hardware IRQs
+	init_idt();
+	__asm__ volatile("sti");
 }
 
 void main() {
@@ -13,7 +20,6 @@ void main() {
 	char *greeting_msg = "Hello, the kernel has loaded successfully!\n";
 	print(greeting_msg);
 
-	// Load Interrupts
-	init_idt();
+	init_interrupts();
 	print("\nInterrupts loaded.. \n");
 }

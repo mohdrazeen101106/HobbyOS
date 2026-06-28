@@ -106,4 +106,6 @@ global idt_load
 idt_load:
     mov eax, [esp + 4]  ; Pointer to IDT descriptor struct
     lidt [eax]
+    sti                 ; Re-enable interrupts as they were disabled
+                        ; for switching from 16-bit to 32-bit mode
     ret
