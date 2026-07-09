@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "../../drivers/screen.h"
+#include "../../drivers/keyboard.h"
 #include "../pic/pic.h"
 
 struct idt_entry idt[IDT_SIZE];
@@ -16,8 +17,15 @@ void interrupt_handler(struct cpu_state *cpu_s, struct interrupt_frame *int_fram
     uint32_t int_no = int_frame->int_no;
     uint32_t error_code = int_frame->error_code;
 
-    //if(int_no == 3)
-    //    print("Interrupt worked!\n");
+    switch (int_no)
+    {
+    case 33:
+        keyboard_handler();
+        break;
+    
+    default:
+        break;
+    }
 
     // Send EOI signal for hardware IRQs (32-47)
     if(int_no >= 32 && int_no <= 47) pic_send_eoi(int_no - 32);
