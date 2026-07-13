@@ -92,7 +92,7 @@ void irq_enable(uint8_t IRQ_line) {
     }
 
     // Clear the required bit
-    port_byte_out(port, port_byte_in(port) & ~(1 << IRQ_line));
+    port_byte_out(port, (uint8_t)(port_byte_in(port) & ~(1 << IRQ_line)));
 }
 
 /*

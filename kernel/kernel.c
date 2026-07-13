@@ -4,9 +4,15 @@
 #include "./input/input.h"
 #include "../drivers/keyboard.h"
 
+// Function prototypes
+void sample_callback(void);
+void init_interrupts(void);
+void main(void);
+
 // Testing shortcuts
 void sample_callback() {
-	print("Shortcut triggered\n");
+    const uint8_t* shortcut_msg = (uint8_t *)"Shortcut triggered\n";
+	print(shortcut_msg);
 }
 
 /*
@@ -18,12 +24,13 @@ void sample_callback() {
 void init_interrupts() {
 	pic_remap(); // Hardware IRQs
 	init_idt();
-	__asm__ volatile("sti");
 }
 
 void main() {
     clear_screen();
-    print("Kernel loaded\n");
+
+    const uint8_t* welcome_msg = (uint8_t *)"Hello, Welcome to MyOS!\n";
+    print(welcome_msg);
 
     input_init();
     init_interrupts();

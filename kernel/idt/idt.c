@@ -14,8 +14,10 @@ struct idt_descriptor idt_d;
 */
 void interrupt_handler(struct cpu_state *cpu_s, struct interrupt_frame *int_frame) {
     // Get the interrupt number and error code from stack state
-    uint32_t int_no = int_frame->int_no;
-    uint32_t error_code = int_frame->error_code;
+    uint8_t int_no = int_frame->int_no;
+    // uint32_t error_code = int_frame->error_code;
+
+    cpu_s->eax = 0; // Access CPU state as required, for now it isnt required
 
     switch (int_no)
     {
@@ -42,8 +44,8 @@ void interrupt_handler(struct cpu_state *cpu_s, struct interrupt_frame *int_fram
 void init_idt() {
     extern void *isr_table[256];
 
-    for(int i = 0; i < 256; i++)
-        idt_set_gate(i, (uint32_t)isr_table[i], 0x08, 0x8E);
+    for(uint8_t i = 1; i != 0; i++)
+        idt_set_gate(i-1, (uint32_t)isr_table[i-1], 0x08, 0x8E);
 
     idt_d.limit = sizeof(idt) - 1;
     idt_d.base = (uint32_t)idt;
@@ -61,5 +63,5 @@ void idt_set_gate(uint8_t int_no, uint32_t handler, uint16_t segment_selector, u
     idt[int_no].segment_selector = segment_selector;
     idt[int_no].zero = 0;
     idt[int_no].offset_low = handler & 0xFFFF;
-    idt[int_no].offset_high = (handler >> 16) & 0xFFFF;
+    idt[int_no].offset_high = (uint16_t)((handler >> 16) & 0xFFFF);
 }

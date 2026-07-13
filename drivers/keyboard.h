@@ -2,6 +2,7 @@
 #define KEYBOARD_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define KBD_DATA_PORT 0x60
 
@@ -57,16 +58,16 @@ typedef enum {
 */
 typedef struct
 {
-    uint8_t shift;
-    uint8_t caps_lock;
-    uint8_t ctrl;
-    uint8_t alt;
+    bool shift;
+    bool caps_lock;
+    bool ctrl;
+    bool alt;
 } kbd_state_t;
 
-kbd_err_t keyboard_init();
-void keyboard_handler();
+kbd_err_t keyboard_init(void);
+void keyboard_handler(void);
 
-uint8_t key_is_pressed(key_code_t key);
-const kbd_state_t *kbd_get_state();
+bool key_is_pressed(key_code_t key);
+const kbd_state_t *kbd_get_state(void);
 
 #endif

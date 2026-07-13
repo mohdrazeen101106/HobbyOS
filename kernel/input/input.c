@@ -33,6 +33,8 @@ void input_init() {
 
     for (int i = 0; i < KEY_COUNT; i++) pressed_keys[i] = false;
     for (int i = 0; i < MAX_SHORTCUTS; i++) shortcuts[i].active = false;
+
+    keyboard_init();
 }
 
 /*

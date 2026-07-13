@@ -1,3 +1,6 @@
+#ifndef IDT_H
+#define IDT_H
+
 #include <stdint.h>
 
 #define IDT_SIZE 256
@@ -48,7 +51,7 @@ typedef struct cpu_state {
     Mainly has the error code and interrupt number
 */
 typedef struct interrupt_frame {
-    uint32_t int_no; // The interrupt number pushed by the macro
+    uint8_t int_no; // The interrupt number pushed by the macro
     uint32_t error_code; // The error code pushed by the macro
     uint32_t eip; // Pushed by CPU
     uint32_t cs; // Pushed by CPU
@@ -58,7 +61,9 @@ typedef struct interrupt_frame {
 extern struct idt_entry idt[IDT_SIZE]; //Define the IDT
 extern struct idt_descriptor idt_d; //Define the IDT descriptor used by lidt
 
-void init_idt();
+void init_idt( void );
 void interrupt_handler(struct cpu_state *cpu_s, struct interrupt_frame *int_frame);
 void idt_set_gate(uint8_t int_no, uint32_t handler, uint16_t segment_selector, uint8_t flags);
 extern void idt_load(struct idt_descriptor *idt_d);
+
+#endif

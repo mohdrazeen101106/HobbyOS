@@ -1,3 +1,6 @@
+#ifndef INPUT_H
+#define INPUT_H
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -64,16 +67,18 @@ typedef enum {
     INPUT_ERR_INVALID_ARG   = -2,   // Invalid argument or pointer
 } input_error_t;
 
-void input_init();
+void input_init(void);
 bool input_push_event(const input_event_t *event);
 bool input_pop_event(input_event_t *out);
-bool input_has_events();
-uint32_t input_pending_count();
+bool input_has_events(void);
+uint32_t input_pending_count(void);
 bool input_key_is_pressed(key_code_t key);
 
 int input_register_shortcut(const key_code_t *keys, uint8_t key_count, void (*callback)(void));
 input_error_t input_deregister_shortcut(uint32_t id);
 
-void input_update();
+void input_update(void);
 
 void input_get_stats(input_stats_t *out);
+
+#endif

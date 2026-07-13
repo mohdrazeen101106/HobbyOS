@@ -6,10 +6,30 @@ CC      := gcc
 AS      := nasm
 LD      := ld
 OBJCOPY := objcopy
+QEMU 	:= qemu-system-x86_64
 
-CFLAGS  := -m32 -ffreestanding -g -O0 \
-           -fno-pic -fno-pie -no-pie \
-           -Wall -Wextra -MMD -MP
+CFLAGS  := 	-m32 \
+			-std=c11 \
+			-ffreestanding \
+			-g \
+			-O0 \
+           	-fno-pic \
+		   	-fno-pie \
+			-fno-stack-protector \
+			-fno-builtin \
+			-fno-omit-frame-pointer \
+		   	-no-pie \
+           	-Wall \
+		   	-Wextra \
+			-Wpedantic \
+			-Wshadow \
+			-Wconversion \
+			-Wundef \
+			-Wmissing-prototypes \
+			-Wstrict-prototypes \
+			-Werror \
+			-MMD \
+			-MP
 
 LDFLAGS := -m elf_i386 -Ttext 0x1000
 

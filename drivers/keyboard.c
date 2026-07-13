@@ -62,7 +62,7 @@ static const key_code_t sc1_ext_to_key[256] = {
 };
  
 // Set 1 make codes → ASCII 
-static const char sc1_lower[256] = {
+static const uint8_t sc1_lower[256] = {
     [0x02]='1', [0x03]='2', [0x04]='3', [0x05]='4', [0x06]='5',
     [0x07]='6', [0x08]='7', [0x09]='8', [0x0A]='9', [0x0B]='0',
     [0x0C]='-', [0x0D]='=', [0x0E]='\b',[0x0F]='\t',
@@ -78,7 +78,7 @@ static const char sc1_lower[256] = {
 };
  
 // Set 1 make codes → ASCII shifted
-static const char sc1_upper[256] = {
+static const uint8_t sc1_upper[256] = {
     [0x02]='!', [0x03]='@', [0x04]='#', [0x05]='$', [0x06]='%',
     [0x07]='^', [0x08]='&', [0x09]='*', [0x0A]='(', [0x0B]=')',
     [0x0C]='_', [0x0D]='+', [0x0E]='\b',[0x0F]='\t',
@@ -97,7 +97,7 @@ static parse_state_t parse_state = STATE_NORMAL;
 
 // Store whether each key is pressed
 // 0x00 for unpressed and 0xFF for pressed!
-static volatile uint8_t key_state[KEY_COUNT];
+static volatile bool key_state[KEY_COUNT];
 
 static kbd_state_t kbd_state; // Store keyboard modifier states, shift etc.
 
@@ -122,19 +122,19 @@ static uint8_t resolve_ascii(uint8_t scancode) {
 static void key_set_pressed(key_code_t key, uint8_t scancode) {
     if (key == KEY_UNKNOWN) return;
  
-    key_state[key] = 0xFF;
+    key_state[key] = true;
  
     switch (key) {
         case KEY_LSHIFT:
-        case KEY_RSHIFT:    kbd_state.shift     = 0xFF;
+        case KEY_RSHIFT:    kbd_state.shift     = true;
                             break;
         case KEY_CAPS:      kbd_state.caps_lock = !kbd_state.caps_lock; 
                             break;
         case KEY_LCTRL:
-        case KEY_RCTRL:     kbd_state.ctrl      = 0xFF;                 
+        case KEY_RCTRL:     kbd_state.ctrl      = true;                 
                             break;
         case KEY_LALT:  
-        case KEY_RALT:      kbd_state.alt       = 0xFF;                 
+        case KEY_RALT:      kbd_state.alt       = true;                 
                             break;
         default:            break;
     }
@@ -156,23 +156,23 @@ static void key_set_pressed(key_code_t key, uint8_t scancode) {
 static void key_set_released(key_code_t key) {
     if (key == KEY_UNKNOWN) return;
  
-    key_state[key] = 0;
+    key_state[key] = false;
  
     switch (key) {
         case KEY_LSHIFT:
         case KEY_RSHIFT:
             if (!key_state[KEY_LSHIFT] && !key_state[KEY_RSHIFT])
-                kbd_state.shift = 0;
+                kbd_state.shift = false;
             break;
         case KEY_LCTRL:
         case KEY_RCTRL:
             if (!key_state[KEY_LCTRL] && !key_state[KEY_RCTRL])
-                kbd_state.ctrl = 0;
+                kbd_state.ctrl = false;
             break;
         case KEY_LALT:
         case KEY_RALT:
             if (!key_state[KEY_LALT] && !key_state[KEY_RALT])
-                kbd_state.alt = 0;
+                kbd_state.alt = false;
             break;
         default:
             break;
@@ -228,7 +228,7 @@ void keyboard_handler() {
     Query whether a physical key is currently held down.
     Reads directly from the ISR-maintained key_state_t bitmap.
  */
-uint8_t key_is_pressed(key_code_t key) {
+bool key_is_pressed(key_code_t key) {
     if (key == KEY_UNKNOWN || key >= KEY_COUNT) return 0;
     return key_state[key];
 }
@@ -238,4 +238,16 @@ uint8_t key_is_pressed(key_code_t key) {
 */
 const kbd_state_t *kbd_get_state() {
     return &kbd_state;
+}
+
+/*
+    Initialize keyboard state
+*/
+kbd_err_t keyboard_init() {
+    kbd_state.alt = false;
+    kbd_state.shift = false;
+    kbd_state.caps_lock = false;
+    kbd_state.ctrl = false;
+
+    return KBD_OK;
 }
