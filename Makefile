@@ -6,7 +6,9 @@ CC      := gcc
 AS      := nasm
 LD      := ld
 OBJCOPY := objcopy
+OBJDUMP := objdump
 QEMU 	:= qemu-system-x86_64
+NM 		:= nm
 
 CFLAGS  := 	-m32 \
 			-std=c11 \
@@ -31,7 +33,10 @@ CFLAGS  := 	-m32 \
 			-MMD \
 			-MP
 
-LDFLAGS := -m elf_i386 -Ttext 0x1000
+LDFLAGS := 	-m elf_i386 \
+			-T kernel/linker.ld \
+			-nostdlib \
+			-Map=kernel.map
 
 # ======================================================
 # Source discovery
@@ -79,7 +84,12 @@ kernel.bin: kernel.elf
 	$(OBJCOPY) -O binary $< $@
 
 os-image: boot/boot_sect.bin kernel.bin
-	cat $^ > $@
+	cp kernel.bin kernel.padded.bin
+
+	size=$$(stat -c%s kernel.padded.bin); \
+	padded=$$((( size + 511 ) / 512*512)); \
+	truncate -s $$padded kernel.padded.bin
+	cat boot/boot_sect.bin kernel.padded.bin > $@
 
 # ======================================================
 # Compilation rules
@@ -114,5 +124,20 @@ clean:
 	rm -f kernel.bin
 	rm -f kernel.elf
 	rm -f os-image
+	rm -f kernel.disasm
+	rm -f kernel.map
+	rm -f kernel.padded.bin
 
-.PHONY: all run debug clean
+symbols: kernel.elf
+	$(NM) -n kernel.elf
+
+sections: kernel.elf
+	$(OBJDUMP) -h kernel.elf
+
+disassemble: kernel.elf
+	$(OBJDUMP) -d -M intel -S kernel.elf > kernel.disasm
+
+size: kernel.elf
+	size kernel.elf
+
+.PHONY: all run debug clean symbols sections disassemble size

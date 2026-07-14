@@ -1,13 +1,9 @@
+#include "kernel.h"
 #include "../drivers/screen.h"
 #include "./idt/idt.h"
 #include "./pic/pic.h"
 #include "./input/input.h"
 #include "../drivers/keyboard.h"
-
-// Function prototypes
-void sample_callback(void);
-void init_interrupts(void);
-void main(void);
 
 // Testing shortcuts
 void sample_callback() {
@@ -26,7 +22,7 @@ void init_interrupts() {
 	init_idt();
 }
 
-void main() {
+void kmain() {
     clear_screen();
 
     const uint8_t* welcome_msg = (uint8_t *)"Hello, Welcome to MyOS!\n";

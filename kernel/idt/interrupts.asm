@@ -109,3 +109,5 @@ idt_load:
     sti                 ; Re-enable interrupts as they were disabled
                         ; for switching from 16-bit to 32-bit mode
     ret
+
+SECTION .note.GNU-stack noalloc noexec nowrite progbits
