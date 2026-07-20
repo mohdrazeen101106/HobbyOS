@@ -71,6 +71,7 @@ run: os-image
 debug: os-image
 	qemu-system-i386 \
 		-drive format=raw,file=os-image,if=floppy \
+		-serial stdio \
 		-s -S
 
 # ======================================================

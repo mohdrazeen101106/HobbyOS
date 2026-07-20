@@ -1,5 +1,5 @@
 #include "screen.h"
-#include "../kernel/io/io.h"
+#include "../../kernel/io/io.h"
 
 /* Print a character on the screen at col, row, or at cursor position */
 void print_char(uint8_t character, int col, int row, uint8_t attribute_byte) {

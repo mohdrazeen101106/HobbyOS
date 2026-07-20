@@ -1,9 +1,10 @@
 #include "kernel.h"
-#include "../drivers/screen.h"
+#include "../drivers/screen/screen.h"
 #include "./idt/idt.h"
 #include "./pic/pic.h"
 #include "./input/input.h"
-#include "../drivers/keyboard.h"
+#include "../drivers/keyboard/keyboard.h"
+#include "../drivers/serial/serial.h"
 
 // Testing shortcuts
 void sample_callback() {
@@ -23,13 +24,18 @@ void init_interrupts() {
 }
 
 void kmain() {
+    serial_init();
+    serial_write("[BOOT] Entered Kernel\n");
+
     clear_screen();
+    serial_write("[BOOT] Screen Initialized\n");
 
     const uint8_t* welcome_msg = (uint8_t *)"Hello, Welcome to MyOS!\n";
     print(welcome_msg);
 
     input_init();
     init_interrupts();
+    serial_write("[BOOT] Interrupts Enabled\n");
 
     key_code_t combo[] = { KEY_LCTRL, KEY_LALT, KEY_LSHIFT };
     input_register_shortcut(combo, 3, sample_callback);

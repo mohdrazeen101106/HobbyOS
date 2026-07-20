@@ -1,6 +1,6 @@
 #include "idt.h"
-#include "../../drivers/screen.h"
-#include "../../drivers/keyboard.h"
+#include "../../drivers/screen/screen.h"
+#include "../../drivers/keyboard/keyboard.h"
 #include "../pic/pic.h"
 
 struct idt_entry idt[IDT_SIZE];

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../../drivers/keyboard.h"
+#include "../../drivers/keyboard/keyboard.h"
 
 // Ring Buffer Config
 
