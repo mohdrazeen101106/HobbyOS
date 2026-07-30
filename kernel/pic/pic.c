@@ -72,7 +72,7 @@ uint16_t pic_get_mask() {
     void pic_send_eoi
     Function that sends the End-Of-Interrupt signal to the required PIC.
 */
-void pic_send_eoi(uint8_t IRQ_line) {
+void pic_send_eoi(uint32_t IRQ_line) {
     if(IRQ_line > 7)
         port_byte_out(PIC2_COMMAND, PIC_EOI);  // Send to slave if required
     port_byte_out(PIC1_COMMAND, PIC_EOI);      // Always send to master

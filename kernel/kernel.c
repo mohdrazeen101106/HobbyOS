@@ -1,15 +1,17 @@
 #include "kernel.h"
-#include "../drivers/screen/screen.h"
+#include "./cpu/cpu.h"
 #include "./idt/idt.h"
 #include "./pic/pic.h"
 #include "./input/input.h"
+#include "../drivers/screen/screen.h"
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/serial/serial.h"
+#include "./log/log.h"
+#include "./debug/debug.h"
 
 // Testing shortcuts
 void sample_callback() {
-    const uint8_t* shortcut_msg = (uint8_t *)"Shortcut triggered\n";
-	print(shortcut_msg);
+    debug_trigger_invalid_opcode();
 }
 
 /*
@@ -25,20 +27,24 @@ void init_interrupts() {
 
 void kmain() {
     serial_init();
-    serial_write("[BOOT] Entered Kernel\n");
-
     clear_screen();
-    serial_write("[BOOT] Screen Initialized\n");
+    log_init();
+
+    klog(LOG_INFO, "Entered Kernel");
+
+    klog(LOG_INFO, "Screen Initialized");
 
     const uint8_t* welcome_msg = (uint8_t *)"Hello, Welcome to MyOS!\n";
     print(welcome_msg);
 
     input_init();
     init_interrupts();
-    serial_write("[BOOT] Interrupts Enabled\n");
+    klog(LOG_INFO, "Interrupts Enabled");
 
     key_code_t combo[] = { KEY_LCTRL, KEY_LALT, KEY_LSHIFT };
     input_register_shortcut(combo, 3, sample_callback);
+
+	debug_trigger_invalid_opcode();
 
     input_event_t event;
     while (1) {
@@ -46,6 +52,6 @@ void kmain() {
         while (input_pop_event(&event))
             if (event.type == INPUT_EVENT_KEY_PRESS && event.ascii)
                 print_char(event.ascii, -1, -1, WHITE_ON_BLACK);       
-        __asm__ volatile("hlt");
+        cpu_hlt();
     }
 }

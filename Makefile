@@ -7,36 +7,36 @@ AS      := nasm
 LD      := ld
 OBJCOPY := objcopy
 OBJDUMP := objdump
-QEMU 	:= qemu-system-x86_64
-NM 		:= nm
+QEMU    := qemu-system-i386
+NM      := nm
 
-CFLAGS  := 	-m32 \
-			-std=c11 \
-			-ffreestanding \
-			-g \
-			-O0 \
-           	-fno-pic \
-		   	-fno-pie \
-			-fno-stack-protector \
-			-fno-builtin \
-			-fno-omit-frame-pointer \
-		   	-no-pie \
-           	-Wall \
-		   	-Wextra \
-			-Wpedantic \
-			-Wshadow \
-			-Wconversion \
-			-Wundef \
-			-Wmissing-prototypes \
-			-Wstrict-prototypes \
-			-Werror \
-			-MMD \
-			-MP
+CFLAGS  := -m32 \
+           -std=c11 \
+           -ffreestanding \
+           -g \
+           -O0 \
+           -fno-pic \
+           -fno-pie \
+           -fno-stack-protector \
+           -fno-builtin \
+           -fno-omit-frame-pointer \
+           -no-pie \
+           -Wall \
+           -Wextra \
+           -Wpedantic \
+           -Wshadow \
+           -Wconversion \
+           -Wundef \
+           -Wmissing-prototypes \
+           -Wstrict-prototypes \
+           -Werror \
+           -MMD \
+           -MP
 
-LDFLAGS := 	-m elf_i386 \
-			-T kernel/linker.ld \
-			-nostdlib \
-			-Map=kernel.map
+LDFLAGS := -m elf_i386 \
+           -T kernel/linker.ld \
+           -nostdlib \
+           -Map=kernel.map
 
 # ======================================================
 # Source discovery
@@ -45,7 +45,7 @@ LDFLAGS := 	-m elf_i386 \
 C_SOURCES := $(shell find kernel drivers -type f -name '*.c')
 
 ASM_SOURCES := $(filter-out kernel/kernel_entry.asm, \
-	$(shell find kernel -type f -name '*.asm'))
+    $(shell find kernel -type f -name '*.asm'))
 
 HEADERS := $(shell find kernel drivers -type f -name '*.h')
 
@@ -65,14 +65,16 @@ OBJ := $(C_OBJ) $(ASM_OBJ)
 all: os-image
 
 run: os-image
-	qemu-system-i386 \
-		-drive format=raw,file=os-image,if=floppy
+	$(QEMU) \
+        -drive format=raw,file=os-image,if=floppy \
+        -no-reboot
 
 debug: os-image
-	qemu-system-i386 \
-		-drive format=raw,file=os-image,if=floppy \
-		-serial stdio \
-		-s -S
+	$(QEMU) \
+        -drive format=raw,file=os-image,if=floppy \
+        -serial stdio \
+        -d cpu_reset,guest_errors \
+        -s -S
 
 # ======================================================
 # Kernel

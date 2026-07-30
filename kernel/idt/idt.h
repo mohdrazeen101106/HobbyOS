@@ -29,40 +29,39 @@ typedef struct idt_descriptor
 } __attribute__((packed)) idt_descriptor;
 
 /*
-    struct cpu_state
-    Stores the register states right before the interrupt is triggered
-    The order matters here, as edi is the last register to be pushed onto the stack
-    while eax is the first register to be pushed
+    struct interrupt_frame_t
+    Stores the interrupt data, along with cpu register states right before the C handler is called
+    Contains the complete context required for services like exception handling, task switching, etc.
 */
-typedef struct cpu_state {
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t esp;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
+typedef struct interrupt_frame_t
+{
     uint32_t eax;
-} __attribute__((packed)) cpu_state;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t ebx;
 
-/*
-    struct interrupt_frame
-    Stores the interrupt data right before the C handler is called
-    Mainly has the error code and interrupt number
-*/
-typedef struct interrupt_frame {
-    uint8_t int_no; // The interrupt number pushed by the macro
-    uint32_t error_code; // The error code pushed by the macro
-    uint32_t eip; // Pushed by CPU
-    uint32_t cs; // Pushed by CPU
-    uint32_t eflags; // Pushed by CPU
-} __attribute__((packed)) interrupt_frame;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esi;
+    uint32_t edi;
+
+    uint32_t ds;
+    uint32_t es;
+    uint32_t fs;
+    uint32_t gs;
+
+    uint32_t vector;
+    uint32_t error_code;
+
+    uint32_t eip;
+    uint32_t cs;
+    uint32_t eflags;
+} __attribute__((packed)) interrupt_frame_t;
 
 extern struct idt_entry idt[IDT_SIZE]; //Define the IDT
 extern struct idt_descriptor idt_d; //Define the IDT descriptor used by lidt
 
 void init_idt( void );
-void interrupt_handler(struct cpu_state *cpu_s, struct interrupt_frame *int_frame);
 void idt_set_gate(uint8_t int_no, uint32_t handler, uint16_t segment_selector, uint8_t flags);
 extern void idt_load(struct idt_descriptor *idt_d);
 

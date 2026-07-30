@@ -1,5 +1,5 @@
 [bits 32]
-[extern interrupt_handler]
+[extern interrupt_dispatch]
 
 %macro no_error_code_interrupt_handler 1
 global interrupt_handler_%1
@@ -24,19 +24,32 @@ interrupt_handler_%1:
 ;   [err_code]  - pushed by macro (dummy 0) or CPU
 ;   [int_no]    - pushed by macro
 common_interrupt_handler:
+    ; Push segment registers to kernel for debugging
+    push gs
+    push fs
+    push es
+    push ds
+
     pushad
 
-    lea eax, [esp + 32]     ; pass pointer to stack_state struct to C handler
-    push eax
+    mov ax, 0x10            ; Reload Data Segment
+    mov ds, ax
+    mov es, ax
 
-    lea eax, [esp + 4]      ; pass pointer to cpu_state struct to C handler
-    push eax
+    cld
 
-    call interrupt_handler  ; call the C interrupt handler
+    push esp                ; Push the pointer to int_frame struct
 
-    add esp, 8              ; clean up the pointers to structs pushed              
+    call interrupt_dispatch  ; call the C interrupt handler
+
+    add esp, 4              ; clean up the pointer to struct pushed              
     
-    popad                  
+    popad                   ; clean up the normal registers
+
+    pop ds                  ; clean up the segment registers
+    pop es
+    pop fs
+    pop gs
     
     add esp, 8              ; clean up int_no + err_code
     iret                    ; restore eip, cs, eflags (CPU-pushed)

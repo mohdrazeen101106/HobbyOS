@@ -7,37 +7,6 @@ struct idt_entry idt[IDT_SIZE];
 struct idt_descriptor idt_d;
 
 /*
-    void interrupt_handler
-    The common C interrupt handler for all interrupts!
-    Still actual functionality for each interrupt has to be separately implemented and 
-    can be called from this function
-*/
-void interrupt_handler(struct cpu_state *cpu_s, struct interrupt_frame *int_frame) {
-    // Get the interrupt number and error code from stack state
-    uint8_t int_no = int_frame->int_no;
-    // uint32_t error_code = int_frame->error_code;
-
-    cpu_s->eax = 0; // Access CPU state as required, for now it isnt required
-
-    switch (int_no)
-    {
-    case 33:
-        keyboard_handler();
-        break;
-    
-    default:
-        break;
-    }
-
-    // Send EOI signal for hardware IRQs (32-47)
-    if(int_no >= 32 && int_no <= 47) pic_send_eoi(int_no - 32);
-
-    // Call the appropriate interrupts
-    // Add interrupt functions here as needed by implementation!
-    return;
-}
-
-/*
     void init_idt
     Initialize and load the IDT into memory
 */
