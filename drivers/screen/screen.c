@@ -16,10 +16,32 @@ void print_char(uint8_t character, int col, int row, uint8_t attribute_byte) {
 		offset = get_screen_offset((uint8_t)col, (uint8_t)row);
 	else offset = get_cursor();
 
-	if (character == '\n') {
+	// Control characters
+	if(character == '\n') {
 		uint8_t rows = (uint8_t)(offset / (2*MAX_COLS));
 		offset = get_screen_offset(79, rows);
 	}
+	else if(character == '\b') {
+		uint8_t rows = (uint8_t)(offset / (2*MAX_COLS));
+		uint8_t cols = (uint8_t)(offset % (2*MAX_COLS));
+
+		
+		offset -= 2;
+		if(cols || rows) {
+			videomem[offset] = ' ';
+			videomem[offset+1] = attribute_byte;
+			offset -= 2;
+		}
+	}
+	else if(character == '\t') {
+		uint8_t tab_space_count = 4;
+		while(tab_space_count-- && offset < 2*MAX_COLS*MAX_ROWS) {
+			videomem[offset] = ' ';
+			videomem[offset+1] = attribute_byte;
+			offset += 2;
+		}
+	}
+	// Normal characters
 	else {
 		videomem[offset] = character;
 		videomem[offset+1] = attribute_byte;

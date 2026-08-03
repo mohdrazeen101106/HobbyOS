@@ -44,7 +44,7 @@ void kmain() {
     key_code_t combo[] = { KEY_LCTRL, KEY_LALT, KEY_LSHIFT };
     input_register_shortcut(combo, 3, sample_callback);
 
-	debug_trigger_invalid_opcode();
+	// debug_trigger_invalid_opcode();
 
     input_event_t event;
     while (1) {
