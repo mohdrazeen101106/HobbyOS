@@ -48,7 +48,7 @@ void print_char(uint8_t character, int col, int row, uint8_t attribute_byte) {
 	}
 
 	offset += 2; //Update the offset to the next character cell, i.e. two bytes ahead
-	// offset = handle_scrolling(offset); //If text overflows, then scroll
+	offset = handle_scrolling(offset); //If text overflows, then scroll
 	set_cursor(offset); //Set the cursor to the new offset
 }
 
@@ -75,8 +75,8 @@ void set_cursor(uint16_t offset) {
 
 void clear_screen() {
 	// Clear the screen by filling it with empty spaces
-	for( int row = 0; row < MAX_ROWS ; ++row ) {
-		for( int col = 0 ; col < MAX_COLS ; ++col ) {
+	for( uint8_t row = 0; row < MAX_ROWS ; ++row ) {
+		for( uint8_t col = 0 ; col < MAX_COLS ; ++col ) {
 			print_char(' ', col, row, WHITE_ON_BLACK);
 		}
 	}
@@ -86,10 +86,26 @@ void clear_screen() {
 
 void print_at(const uint8_t* message, int col, int row) {
 	if (col >= 0 && row >= 0) set_cursor(get_screen_offset((uint8_t)col, (uint8_t)row));
-	int i = 0;
-	while(message[i]) print_char(message[i++], col, row, WHITE_ON_BLACK);
+	uint8_t i = 0;
+	while(message[i]) print_char(message[i++], -1, -1, WHITE_ON_BLACK);
 }
 
 void print(const uint8_t* message) {
 	print_at(message, -1, -1);
+}
+
+uint16_t handle_scrolling(uint16_t offset) {
+	if(offset < 2 * MAX_COLS * MAX_ROWS) return offset;
+	else {
+		uint16_t offset_overflow = offset - (2 * MAX_COLS * MAX_ROWS);
+		uint8_t rows_to_scroll = (uint8_t)(1 + (offset_overflow / (2 * MAX_COLS)));
+
+		// Delete first (rows_to_scroll) rows and shift all other rows up, leaving new rows
+		for( uint16_t i = 2 * rows_to_scroll * MAX_COLS; i < 2 * MAX_ROWS * MAX_COLS; i++ ) {
+			uint8_t* video_mem = (uint8_t*) VIDEO_ADDRESS;
+			video_mem[i - 2 * rows_to_scroll * MAX_COLS] = video_mem[i];
+			video_mem[i] = 0;
+		}
+		return (uint16_t)(offset - 2 * MAX_COLS * rows_to_scroll);
+	}
 }

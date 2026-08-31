@@ -19,5 +19,6 @@ uint16_t get_screen_offset( uint8_t column, uint8_t row );
 void clear_screen( void );
 void print_at( const uint8_t* message, int col, int row );
 void print( const uint8_t* message );
+uint16_t handle_scrolling( uint16_t offset );
 
 #endif

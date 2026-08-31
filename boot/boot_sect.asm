@@ -25,7 +25,7 @@ load_kernel:
 	call print_string
 
 	mov bx, KERNEL_OFFSET		; Load the kernel at the defined offset
-	mov dh, 34					; Loading a hardcoded number of sectors
+	mov dh, 40					; Loading a hardcoded number of sectors
 	mov dl, [BOOT_DRIVE]		; TODO - Switch to dynamically loading number of sectors
 	call disk_load				; either by some macro or by implementing a file-system aware
 								; bootloader

@@ -3,6 +3,7 @@
 #include "./idt/idt.h"
 #include "./pic/pic.h"
 #include "./input/input.h"
+#include "./lib/kstdio.h"
 #include "../drivers/screen/screen.h"
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/serial/serial.h"
@@ -34,8 +35,7 @@ void kmain() {
 
     klog(LOG_INFO, "Screen Initialized");
 
-    const uint8_t* welcome_msg = (uint8_t *)"Hello, Welcome to MyOS!\n";
-    print(welcome_msg);
+    printf("\nHello, Welcome to HobbyOS!\n\n");
 
     input_init();
     init_interrupts();
@@ -44,14 +44,12 @@ void kmain() {
     key_code_t combo[] = { KEY_LCTRL, KEY_LALT, KEY_LSHIFT };
     input_register_shortcut(combo, 3, sample_callback);
 
-	// debug_trigger_invalid_opcode();
-
     input_event_t event;
     while (1) {
         input_update();                          
         while (input_pop_event(&event))
             if (event.type == INPUT_EVENT_KEY_PRESS && event.ascii)
-                print_char(event.ascii, -1, -1, WHITE_ON_BLACK);       
+                printf("%c", (char)event.ascii);
         cpu_hlt();
     }
 }

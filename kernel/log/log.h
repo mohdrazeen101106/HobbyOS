@@ -4,7 +4,7 @@
 #include <stdarg.h>
 
 typedef enum {
-    LOG_TRACE,
+    LOG_TRACE = 0,
     LOG_DEBUG,
     LOG_INFO,
     LOG_WARN,

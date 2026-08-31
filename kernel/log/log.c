@@ -1,6 +1,6 @@
 #include "log.h"
-#include "../../drivers/screen/screen.h"
 #include "../../drivers/serial/serial.h"
+#include "../lib/kstdio.h"
 
 static const char* level_names[] = {
     "TRACE",
@@ -12,15 +12,7 @@ static const char* level_names[] = {
 };
 
 void klog(log_level_t level, const char* fmt, ...) {
-    (void) level;
-
-    print((uint8_t *)"[");
-    print((uint8_t *)level_names[level]);
-    print((uint8_t *)"] ");
-
-    print((uint8_t *)fmt);
-
-    print((uint8_t *)"\n");
+    printf("[%s] %s\n", level_names[2], fmt);
 
     serial_write("[");
     serial_write(level_names[level]);
