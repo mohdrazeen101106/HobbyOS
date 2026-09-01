@@ -11,6 +11,7 @@ QEMU    := qemu-system-i386
 NM      := nm
 
 CFLAGS  := -m32 \
+           -I. \
            -std=c11 \
            -ffreestanding \
            -g \
@@ -42,12 +43,12 @@ LDFLAGS := -m elf_i386 \
 # Source discovery
 # ======================================================
 
-C_SOURCES := $(shell find kernel drivers -type f -name '*.c')
+C_SOURCES := $(shell find kernel drivers arch tests -type f -name '*.c')
 
 ASM_SOURCES := $(filter-out kernel/kernel_entry.asm, \
-    $(shell find kernel -type f -name '*.asm'))
+    $(shell find kernel arch -type f -name '*.asm'))
 
-HEADERS := $(shell find kernel drivers -type f -name '*.h')
+HEADERS := $(shell find kernel drivers arch tests -type f -name '*.h')
 
 # ======================================================
 # Objects
@@ -122,6 +123,10 @@ clean:
 	find kernel -name "*.d" -delete
 	find drivers -name "*.o" -delete
 	find drivers -name "*.d" -delete
+	find arch -name "*.o" -delete
+	find arch -name "*.d" -delete
+	find tests -name "*.o" -delete
+	find tests -name "*.d" -delete
 
 	rm -f boot/*.bin
 	rm -f kernel.bin

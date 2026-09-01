@@ -2,7 +2,7 @@
     CPU module that contains inline assembly for essential cpu tasks, so that this is the only
     inline assembly interface for the rest of the kernel.
 */
-#include "cpu.h"
+#include "arch/x86/cpu/cpu.h"
 
 void cpu_cli(void) {
     __asm__ volatile ("cli" : : : "memory");

@@ -1,5 +1,5 @@
-#include "serial.h"
-#include "../../kernel/io/io.h"
+#include "drivers/serial/serial.h"
+#include "arch/x86/io/io.h"
 #include <stdint.h>
 
 static bool serial_initialized = false;

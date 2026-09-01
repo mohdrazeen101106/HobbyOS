@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#include "../exceptions/exception.h"
-#include "../idt/idt.h"
+#include "kernel/exceptions/exception.h"
+#include "arch/x86/idt/idt.h"
 
 // Enter the kernel panic state, this function never returns
 __attribute__((noreturn))

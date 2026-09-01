@@ -1,8 +1,8 @@
-#include "debug.h"
+#include "tests/debug/debug.h"
 #include <stdint.h>
 
-#include "../../drivers/screen/screen.h"
-#include "../lib/karith64.h"
+#include "drivers/screen/screen.h"
+#include "kernel/lib/karith64.h"
 
 void debug_trigger_invalid_opcode(void)
 {

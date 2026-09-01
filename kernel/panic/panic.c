@@ -1,7 +1,7 @@
 #include "panic.h"
 
-#include "../cpu/cpu.h"
-#include "../log/log.h"
+#include "arch/x86/cpu/cpu.h"
+#include "kernel/log/log.h"
 
 static volatile bool g_panicking = false;
 

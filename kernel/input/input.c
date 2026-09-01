@@ -1,4 +1,4 @@
-#include "input.h"
+#include "kernel/input/input.h"
 
 static input_event_t ring_buffer[INPUT_BUFFER_SIZE];
 

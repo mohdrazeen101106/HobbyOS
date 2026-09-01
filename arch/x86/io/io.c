@@ -1,5 +1,4 @@
-#include "io.h"
-#include <stdint.h>
+#include "arch/x86/io/io.h"
 
 uint8_t port_byte_in (uint16_t port) {
 	// A handy C wrapper function that reads a byte from the specified port

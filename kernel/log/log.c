@@ -1,6 +1,6 @@
 #include "log.h"
-#include "../../drivers/serial/serial.h"
-#include "../lib/kstdio.h"
+#include "drivers/serial/serial.h"
+#include "kernel/lib/kstdio.h"
 
 static const char* level_names[] = {
     "TRACE",

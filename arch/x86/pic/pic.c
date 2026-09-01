@@ -1,6 +1,5 @@
-#include "pic.h"
-#include "../io/io.h"
-#include <stdint.h>
+#include "arch/x86/pic/pic.h"
+#include "arch/x86/io/io.h"
 
 /*
     void pic_remap

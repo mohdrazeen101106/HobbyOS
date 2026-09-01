@@ -1,8 +1,8 @@
-#include "kstdio.h"
+#include "kernel/lib/kstdio.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "../../drivers/screen/screen.h"
-#include "../lib/karith64.h"
+#include "drivers/screen/screen.h"
+#include "kernel/lib/karith64.h"
 
 int* printf_num( int* argp, printf_length_state_t len, bool sign, int radix);
 

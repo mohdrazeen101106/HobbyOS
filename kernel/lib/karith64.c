@@ -1,4 +1,4 @@
-#include "karith64.h"
+#include "kernel/lib/karith64.h"
 
 void div64by32(uint64_t dividend, uint32_t divisor, uint64_t* quotient, uint64_t* remainder) {
     *remainder = dividend >> 32;

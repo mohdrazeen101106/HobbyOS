@@ -1,6 +1,6 @@
-#include "keyboard.h"
-#include "../../kernel/io/io.h"
-#include "../../kernel/input/input.h"
+#include "drivers/keyboard/keyboard.h"
+#include "arch/x86/io/io.h"
+#include "kernel/input/input.h"
 
 /* Lookup Tables */
 

@@ -1,4 +1,4 @@
-#include "exception.h"
+#include "kernel/exceptions/exception.h"
 
 static const exception_descriptor_t exception_table[32] = {
     [0] = {
