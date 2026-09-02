@@ -10,11 +10,6 @@
 #include "kernel/log/log.h"
 #include "tests/debug/debug.h"
 
-// Testing shortcuts
-void sample_callback() {
-    debug_trigger_invalid_opcode();
-}
-
 /*
 	void init_interrupts()
 	A function that remaps the PIC vector offsets for hardware IRQs, loads
@@ -41,8 +36,13 @@ void kmain() {
     init_interrupts();
     klog(LOG_INFO, "Interrupts Enabled");
 
-    key_code_t combo[] = { KEY_LCTRL, KEY_LALT, KEY_LSHIFT };
-    input_register_shortcut(combo, 3, sample_callback);
+    // Register shortcuts for kernel panic testing
+    key_code_t c1[] = { KEY_LCTRL, KEY_LALT, KEY_LSHIFT };
+    key_code_t c2[] = { KEY_LCTRL, KEY_LALT, KEY_TAB };
+    input_register_shortcut(c1, 3, debug_trigger_invalid_opcode);
+    input_register_shortcut(c2, 4, debug_trigger_gen_protection_fault);
+
+    // klog(LOG_DEBUG, "This should be 2: %d", 2);
 
     input_event_t event;
     while (1) {

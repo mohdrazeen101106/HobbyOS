@@ -4,108 +4,215 @@
 #include "drivers/screen/screen.h"
 #include "kernel/lib/karith64.h"
 
-int* printf_num( int* argp, printf_length_state_t len, bool sign, int radix);
+size_t _format_num( char* buf, size_t size, va_list *argsp, format_length_state_t len, bool sign, int radix, int width, bool zero_pad);
 
 /*
-    My simplified implementation of the printf function from the C standard library
-    Currently only prints to the VGA buffer using the screen driver, later plans are to print
-    to STDOUT after that itself is implemented!
+    A simplified printf implementation that calls a separate formatter function
+    and prints to the screen. 
 */
 void printf( const char* fmt, ... ) {
-    printf_state_t STATE = PRINTF_NORMAL;
-    printf_length_state_t LENGTH = PRINTF_LENGTH_DEFAULT;
+    va_list args;
+    va_start(args, fmt);
 
-    int* argp = (int*) &fmt;
-    argp += sizeof(fmt) / sizeof(int);
+    char buf[256] = {0};
+    kvformat(buf, 256, fmt, args);
+
+    print((uint8_t*)buf);
+    va_end(args);
+}
+
+const char hexChars[] = "0123456789abcdef";
+size_t _format_num( char* buf, size_t size, va_list *argsp, format_length_state_t len, bool sign, int radix, int width, bool zero_pad ) {
+    unsigned long long number = 0;
+    int num_sign = 1;
+
+    switch (len)
+    {
+    case FORMAT_LENGTH_SHORT_SHORT:
+    case FORMAT_LENGTH_SHORT:
+    case FORMAT_LENGTH_DEFAULT:
+        if(sign) {
+            int n = va_arg(*argsp, int);
+            if(n < 0) {
+                num_sign = -1;
+                number = (unsigned long long)(-(n+1))+1;
+            }
+            else number = (unsigned long long)n;
+        }
+        else
+            number = va_arg(*argsp, unsigned int);
+        break;
+    case FORMAT_LENGTH_LONG:
+        if(sign) {
+            long n = va_arg(*argsp, long);
+            if(n < 0) {
+                num_sign = -1;
+                number = (unsigned long long)(-(n+1))+1;
+            }
+            else number = (unsigned long long)n;
+        }
+        else
+            number = va_arg(*argsp, unsigned long);
+
+        break;
+    case FORMAT_LENGTH_LONG_LONG:
+        if(sign) {
+            long long n = va_arg(*argsp, long long);
+            if(n < 0) {
+                num_sign = -1;
+                number = (unsigned long long)(-(n+1))+1;
+            }
+            else number = (unsigned long long)n;
+        }
+        else
+            number = va_arg(*argsp, unsigned long long);
+
+        break;
+    
+    default: break;
+    }
+
+    char buffer [65] = {0};
+    int _pos = 0;
+    do
+    {
+        uint64_t rem = 0;
+        div64by32(number, (uint32_t)radix, &number, &rem);
+        buffer[_pos++] = hexChars[rem];
+    } while (number > 0);
+
+    int total_len = _pos + (sign && (num_sign == -1));
+    int pad = (zero_pad && width > total_len) ? (width - total_len) : 0;
+
+    size_t out = 0;
+    if(sign && num_sign == -1 && out < size) buf[out++] = '-';
+    for(int i = 0; i < pad && out < size; ++i) buf[out++] = '0';
+    while (--_pos >= 0 && out < size - 1) buf[out++] = buffer[_pos];
+
+    return out;
+}
+
+/*
+    A formatter function that works on a given format string
+    and returns the number of characters written. This is a simple implementation
+    not consisting of all the flags and specifiers.
+*/
+size_t kvformat(char* buf, size_t size, const char* fmt, va_list args) {
+    if(!buf || !fmt || size <= 0) return 0;
+
+    format_state_t STATE = FORMAT_NORMAL;
+    format_length_state_t LENGTH = FORMAT_LENGTH_DEFAULT;
+    size_t pos = 0;
+    int width = 0;
+    bool zero_pad = false;
 
     while (*fmt)
     {
+        if(pos >= size - 1) break;
         switch (STATE)
         {
-        case PRINTF_NORMAL:
+        case FORMAT_NORMAL:
             if(*fmt == '%') {
-                LENGTH = PRINTF_LENGTH_DEFAULT;
-                STATE = PRINTF_LENGTH;
+                LENGTH = FORMAT_LENGTH_DEFAULT;
+                zero_pad = false;
+                width = 0;
+                STATE = FORMAT_WIDTH;
             }
-            else print_char((uint8_t)*fmt, -1, -1, WHITE_ON_BLACK); // Print the character to screen
+            else buf[pos++] = (char)*fmt;
             break;
         
-        case PRINTF_LENGTH:
+        case FORMAT_WIDTH:
+            if(*fmt == '0' && width == 0) zero_pad = true;
+            else if(*fmt >= '0' && *fmt <= '9') width = width*10 + (*fmt - '0');
+            else {
+                STATE = FORMAT_LENGTH;
+                --fmt;
+            }
+            break;
+
+        case FORMAT_LENGTH:
             switch (*fmt)
             {
             case 'l':
-                LENGTH = PRINTF_LENGTH_LONG;
-                STATE = PRINTF_LONG;
+                LENGTH = FORMAT_LENGTH_LONG;
+                STATE = FORMAT_LONG;
                 break;
             case 'h':
-                LENGTH = PRINTF_LENGTH_SHORT;
-                STATE = PRINTF_SHORT;
+                LENGTH = FORMAT_LENGTH_SHORT;
+                STATE = FORMAT_SHORT;
                 break;
             default:
-                STATE = PRINTF_SPECIFIER;
+                STATE = FORMAT_SPECIFIER;
                 --fmt;
                 break;
             }
             break;
 
-        case PRINTF_LONG:
+        case FORMAT_LONG:
             if(*fmt == 'l') {
-                LENGTH = PRINTF_LENGTH_LONG_LONG;
-                STATE = PRINTF_SPECIFIER;
+                LENGTH = FORMAT_LENGTH_LONG_LONG;
+                STATE = FORMAT_SPECIFIER;
             }
             else {
-                STATE = PRINTF_SPECIFIER;
+                STATE = FORMAT_SPECIFIER;
                 --fmt;
             }
             break;
         
-        case PRINTF_SHORT:
+        case FORMAT_SHORT:
             if(*fmt == 'h') {
-                LENGTH = PRINTF_LENGTH_SHORT_SHORT;
-                STATE = PRINTF_SPECIFIER;
+                LENGTH = FORMAT_LENGTH_SHORT_SHORT;
+                STATE = FORMAT_SPECIFIER;
             }
             else {
-                STATE = PRINTF_SPECIFIER;
+                STATE = FORMAT_SPECIFIER;
                 --fmt;
             }
             break;
         
-        case PRINTF_SPECIFIER:
+        case FORMAT_SPECIFIER:
             switch (*fmt)
             {
-            case 'c':
-                print_char((uint8_t)*argp, -1, -1, WHITE_ON_BLACK);
-                ++argp;
-                STATE = PRINTF_NORMAL;
+            case 'c': {
+                int c = va_arg(args, int);
+                if(pos < size - 1)
+                    buf[pos++] = (char)c;
+                STATE = FORMAT_NORMAL;
                 break;
-            case 's':
-                print(*(uint8_t**)argp);
-                ++argp;
-                STATE = PRINTF_NORMAL;
+            }
+            case 's': {
+                char* str = va_arg(args, char*);
+                while(*str && pos < size - 1) buf[pos++] = *str++;
+                STATE = FORMAT_NORMAL;
                 break;
+            }
             case '%':
-                print_char((uint8_t)'%', -1, -1, WHITE_ON_BLACK);
-                STATE = PRINTF_NORMAL;
+                if(pos < size - 1) buf[pos++] = '%';
+                STATE = FORMAT_NORMAL;
                 break;
             case 'd':
             case 'i':
-                argp = printf_num(argp, LENGTH, true, 10);
-                STATE = PRINTF_NORMAL;
+                pos += _format_num(buf+pos, size-pos, &args, LENGTH, true, 10, width, zero_pad);
+                STATE = FORMAT_NORMAL;
                 break;
             case 'u':
-                argp = printf_num(argp, LENGTH, false, 10);
-                STATE = PRINTF_NORMAL;
+                pos += _format_num(buf+pos, size-pos, &args, LENGTH, false, 10, width, zero_pad);
+                STATE = FORMAT_NORMAL;
                 break;
             case 'o':
-                argp = printf_num(argp, LENGTH, false, 8);
-                STATE = PRINTF_NORMAL;
+                pos += _format_num(buf+pos, size-pos, &args, LENGTH, false, 8, width, zero_pad);
+                STATE = FORMAT_NORMAL;
                 break;
             case 'X':
             case 'x':
-                argp = printf_num(argp, LENGTH, false, 16);
-                STATE = PRINTF_NORMAL;
+                pos += _format_num(buf+pos, size-pos, &args, LENGTH, false, 16, width, zero_pad);
+                STATE = FORMAT_NORMAL;
                 break;
-            default: break;
+            default: 
+                if(pos < size - 1) buf[pos++] = '%';
+                if(pos < size - 1) buf[pos++] = *fmt;
+                STATE = FORMAT_NORMAL;
+                break;
             }
             break;
 
@@ -115,75 +222,6 @@ void printf( const char* fmt, ... ) {
 
         ++fmt;
     }
-    
-}
-
-const uint8_t hexChars[] = "0123456789abcdef";
-int* printf_num( int* argp, printf_length_state_t len, bool sign, int radix ) {
-    unsigned long long number = 0;
-    int num_sign = 1;
-
-    switch (len)
-    {
-    case PRINTF_LENGTH_SHORT_SHORT:
-    case PRINTF_LENGTH_SHORT:
-    case PRINTF_LENGTH_DEFAULT:
-        if(sign) {
-            int n = *argp;
-            if(n < 0) {
-                n = -n;
-                num_sign = -1;
-            }
-            number = (unsigned long long)n;
-        }
-        else
-            number = *(unsigned int*)argp;
-        
-        ++argp;
-        break;
-    case PRINTF_LENGTH_LONG:
-        if(sign) {
-            long n = *(long*)argp;
-            if(n < 0) {
-                n = -n;
-                num_sign = -1;
-            }
-            number = (unsigned long long)n;
-        }
-        else
-            number = *(unsigned long*)argp;
-
-        ++argp;
-        break;
-    case PRINTF_LENGTH_LONG_LONG:
-        if(sign) {
-            long long n = *(long long*)argp;
-            if(n < 0) {
-                n = -n;
-                num_sign = -1;
-            }
-            number = (unsigned long long)n;
-        }
-        else
-            number = *(unsigned long long*)argp;
-
-        argp += 2;
-        break;
-    
-    default: break;
-    }
-
-    uint8_t buffer [32] = {0};
-    int pos = 0;
-    do
-    {
-        uint64_t rem = 0;
-        div64by32(number, (uint32_t)radix, &number, &rem);
-        buffer[pos++] = hexChars[rem];
-    } while (number > 0);
-
-    if(sign && num_sign == -1) buffer[pos++] = (uint8_t)'-';
-    while (--pos >= 0) print_char(buffer[pos], -1, -1, WHITE_ON_BLACK);
-    
-    return argp;
+    buf[pos] = 0;
+    return pos;
 }

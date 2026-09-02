@@ -9,6 +9,14 @@ void debug_trigger_invalid_opcode(void)
     __asm__ volatile ("ud2");
 }
 
+void debug_trigger_gen_protection_fault(void)
+{
+    __asm__ volatile (
+        "mov $0xFFFF, %ax\n"
+        "mov %ax, %ds\n"
+    );
+}
+
 void test_karith64_div64by32(void)
 {
     uint64_t dividend = 96;

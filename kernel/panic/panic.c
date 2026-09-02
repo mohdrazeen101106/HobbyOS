@@ -1,5 +1,5 @@
-#include "panic.h"
-
+#include "kernel/panic/panic.h"
+#include "kernel/panic/diagnostics.h"
 #include "arch/x86/cpu/cpu.h"
 #include "kernel/log/log.h"
 
@@ -11,8 +11,6 @@ bool panic_in_progress(void) {
 
 __attribute__((noreturn))
 void panic(const exception_descriptor_t *desc, interrupt_frame_t *frame) {
-    (void)frame;
-
     // Disable interrupts
     cpu_cli();
 
@@ -24,9 +22,11 @@ void panic(const exception_descriptor_t *desc, interrupt_frame_t *frame) {
 
     klog(LOG_FATAL, "KERNEL PANIC");
 
-    if (desc != 0) {
+    if (frame) panic_dump_registers(frame);
+    if (desc) {
         klog(LOG_FATAL, desc->name);
         klog(LOG_FATAL, desc->description);
+        if (frame) panic_dump_exception_details(desc, frame);
     }
     else
         klog(LOG_FATAL, "Unknown CPU Exception");

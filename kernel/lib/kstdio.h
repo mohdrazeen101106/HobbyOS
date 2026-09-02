@@ -1,24 +1,29 @@
 #ifndef KSTDIO_H
 #define KSTDIO_H
 
-typedef enum {
-    PRINTF_LENGTH,
-    PRINTF_SPECIFIER,
-    PRINTF_NORMAL,
-    PRINTF_SHORT,
-    PRINTF_SHORT_SHORT,
-    PRINTF_LONG,
-    PRINTF_LONG_LONG
-} printf_state_t;
+#include <stdarg.h>
+#include <stddef.h>
 
 typedef enum {
-    PRINTF_LENGTH_DEFAULT,
-    PRINTF_LENGTH_SHORT,
-    PRINTF_LENGTH_SHORT_SHORT,
-    PRINTF_LENGTH_LONG,
-    PRINTF_LENGTH_LONG_LONG
-} printf_length_state_t;
+    FORMAT_WIDTH,
+    FORMAT_LENGTH,
+    FORMAT_SPECIFIER,
+    FORMAT_NORMAL,
+    FORMAT_SHORT,
+    FORMAT_SHORT_SHORT,
+    FORMAT_LONG,
+    FORMAT_LONG_LONG
+} format_state_t;
+
+typedef enum {
+    FORMAT_LENGTH_DEFAULT,
+    FORMAT_LENGTH_SHORT,
+    FORMAT_LENGTH_SHORT_SHORT,
+    FORMAT_LENGTH_LONG,
+    FORMAT_LENGTH_LONG_LONG
+} format_length_state_t;
 
 void printf( const char* fmt, ... );
+size_t kvformat(char* buf, size_t size, const char* fmt, va_list args);
 
 #endif
