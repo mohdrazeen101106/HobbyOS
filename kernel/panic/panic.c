@@ -22,16 +22,8 @@ void panic(const exception_descriptor_t *desc, interrupt_frame_t *frame) {
 
     klog(LOG_FATAL, "KERNEL PANIC");
 
-    if (frame) panic_dump_registers(frame);
-    if (desc) {
-        klog(LOG_FATAL, desc->name);
-        klog(LOG_FATAL, desc->description);
-        if (frame) panic_dump_exception_details(desc, frame);
-    }
-    else
-        klog(LOG_FATAL, "Unknown CPU Exception");
-
-    klog(LOG_FATAL, "System Halted.");
+    // Generate a proper exception report
+    panic_report(desc, frame);
     
     while (true)
         cpu_hlt();    
